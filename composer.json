@@ -1,0 +1,25 @@
+{
+	"name": "monday-factory/synchronous-socket-client",
+	"type": "library",
+	"description": "Super simple synchronous socket stream client",
+	"keywords": ["php", "socket", "stream", "client"],
+	"homepage": "https://github.com/monday-factory/synchronous-socket-client",
+	"license": ["MIT"],
+	"support": {
+		"issues": "https://github.com/monday-factory/synchronous-socket-client/issues"
+	},
+	"authors": [
+		{
+			"name": "Pavel Janda",
+			"homepage": "http://paveljanda.com"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"MondayFactory\\SynchronousSocketClient\\": "src/"
+		}
+	},
+	"require": {
+		"php": ">= 7.1"
+	}
+}
