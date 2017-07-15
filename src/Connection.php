@@ -65,8 +65,6 @@ class Connection
 
 		$response = null;
 
-		var_dump(fread($this->socketStream, 100000)); die;
-
 		while ($chunk = fread($this->socketStream, 1024)) {
 			$response .= $chunk;
 
@@ -76,6 +74,12 @@ class Connection
 		}
 
 		return $response;
+	}
+
+
+	public function sendMessageWithoutAnswer(string $message): void
+	{
+		fwrite($this->socketStream, $message, strlen($message));
 	}
 
 }
