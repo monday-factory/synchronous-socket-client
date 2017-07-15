@@ -14,23 +14,27 @@ class Connection
 	 */
 	protected $socketStream;
 
+	/**
+	 * @var string
+	 */
+	protected $uri;
 
 	/**
-	 * @throws \InvalidArgumentException
+	 * @var array
 	 */
-	public function __construct($socketStream)
-	{
-		if (!is_resource($socketStream)) {
-			throw new \InvalidArgumentException('Given argument is not a valid resource');
-		}
-
-		$this->socketStream = $socketStream;
-	}
+	protected $options;
 
 
 	/**
 	 * @throws ConnectionException
 	 */
+	public function __construct(string $uri, array $options)
+	{
+		$this->uri = $uri;
+		$this->options = $options;
+	}
+
+
 	public static function factory(string $uri, array $options = []): Connection
 	{
 		if (!isset($options['connectionTimeout']) || !is_int($options['connectionTimeout'])) {
@@ -41,21 +45,7 @@ class Connection
 			$options['streamTimeout'] = 30;
 		}
 
-		$socketStream = @stream_socket_client( // Intentionally @
-			$uri,
-			$errorNumber,
-			$errorMessage,
-			$options['connectionTimeout']
-		);
-
-		if (!$socketStream) {
-			throw new ConnectionException("{$errorNumber}: Error connecting to socket: [{$errorMessage}]");
-		}
-
-		stream_set_timeout($socketStream, $options['streamTimeout']);
-		stream_set_blocking($socketStream, true);
-
-		return new static($socketStream);
+		return new static($uri, $options);
 	}
 
 
@@ -80,6 +70,59 @@ class Connection
 	public function sendMessageWithoutAnswer(string $message): void
 	{
 		fwrite($this->socketStream, $message, strlen($message));
+	}
+
+
+	/**
+	 * @throws ConnectionException
+	 */
+	protected function getSocketStream()
+	{
+		/**
+		 * FIrst time here?
+		 */
+		if (!is_resource($this->socketStream)) {
+			/**
+			 * @throws ConnectionException
+			 */
+			$this->connect();
+
+			return $this->socketStream;
+		}
+
+		/**
+		 * Does the connection failed?
+		 */
+		$meta = stream_get_meta_data($this->socketStream);
+
+		if (($meta['timed_out'] || $meta['eof'])) {
+			/**
+			 * @throws ConnectionException
+			 */
+			$this->connect();
+		}
+
+		return $this->socketStream;
+	}
+
+
+	protected function connect(): void
+	{
+		$socketStream = @stream_socket_client( // Intentionally @
+			$this->uri,
+			$errorNumber,
+			$errorMessage,
+			$this->options['connectionTimeout']
+		);
+
+		if (!is_resource($socketStream)) {
+			throw new ConnectionException("{$errorNumber}: Error connecting to socket: [{$errorMessage}]");
+		}
+
+		stream_set_timeout($socketStream, $this->options['streamTimeout']);
+		stream_set_blocking($socketStream, true);
+
+		$this->socketStream = $socketStream;
 	}
 
 }
