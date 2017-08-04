@@ -51,11 +51,11 @@ class Connection
 
 	public function sendMessage(string $message): ?string
 	{
-		fwrite($this->socketStream, $message, strlen($message));
+		fwrite($this->getSocketStream(), $message, strlen($message));
 
 		$response = null;
 
-		while ($chunk = fread($this->socketStream, 1024)) {
+		while ($chunk = fread($this->getSocketStream(), 1024)) {
 			$response .= $chunk;
 
 			if (substr($chunk, -1) == "\n") {
