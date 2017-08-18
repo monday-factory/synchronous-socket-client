@@ -9,9 +9,9 @@ $options = [
 ];
 
 /**
- * @throws ConnectionException
+ * @throws MondayFactory\SynchronousSocketClient\Exception\ConnectionException
  */
-$connection = App\Stream\Connection::factory('tcp://my.super.server:12345', $options);
+$connection = MondayFactory\SynchronousSocketClient\Connection::factory('tcp://my.super.server:12345', $options);
 
 $response = $connection->sendMessage('{"method": "ping"}');
 
