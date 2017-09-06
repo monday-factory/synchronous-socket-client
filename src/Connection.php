@@ -24,19 +24,32 @@ class Connection
 	 */
 	protected $options;
 
+	/**
+	 * Called after connection is established with arguments: (static, $this->socketStream)
+	 * 
+	 * @var callable|null
+	 */
+	protected $onConnect;
+
 
 	/**
 	 * @throws ConnectionException
 	 */
-	public function __construct(string $uri, array $options)
+	public function __construct(string $uri, array $options, $onConnect)
 	{
 		$this->uri = $uri;
 		$this->options = $options;
+		$this->onConnect = $onConnect;
 	}
 
 
+	/**
+	 * @throws \InvalidArgumentException
+	 */
 	public static function factory(string $uri, array $options = []): Connection
 	{
+		$onConnect = null;
+
 		if (!isset($options['connectionTimeout']) || !is_int($options['connectionTimeout'])) {
 			$options['connectionTimeout'] = 30;
 		}
@@ -45,7 +58,15 @@ class Connection
 			$options['streamTimeout'] = 30;
 		}
 
-		return new static($uri, $options);
+		if (isset($options['onConnect'])) {
+			if (!is_callable($options['onConnect'])) {
+				throw new \InvalidArgumentException('Given argument $options[\'onConnect\'] is not callable');
+			}
+
+			$onConnect = $options['onConnect'];
+		}
+
+		return new static($uri, $options, $onConnect);
 	}
 
 
@@ -79,7 +100,7 @@ class Connection
 	protected function getSocketStream()
 	{
 		/**
-		 * FIrst time here?
+		 * First time here?
 		 */
 		if (!is_resource($this->socketStream)) {
 			/**
@@ -123,6 +144,10 @@ class Connection
 		stream_set_blocking($socketStream, true);
 
 		$this->socketStream = $socketStream;
+
+		if (is_callable($this->onConnect)) {
+			call_user_func_array($this->onConnect, [$this, $socketStream]);
+		}
 	}
 
 }
