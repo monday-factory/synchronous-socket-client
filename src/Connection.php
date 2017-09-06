@@ -74,23 +74,29 @@ class Connection
 	{
 		fwrite($this->getSocketStream(), $message, strlen($message));
 
-		$response = null;
-
-		while ($chunk = fread($this->getSocketStream(), 1024)) {
-			$response .= $chunk;
-
-			if (substr($chunk, -1) == "\n") {
-				break;
-			}
-		}
-
-		return $response;
+		return $this->receiveMessage();
 	}
 
 
 	public function sendMessageWithoutAnswer(string $message): void
 	{
-		fwrite($this->socketStream, $message, strlen($message));
+		fwrite($this->getSocketStream(), $message, strlen($message));
+	}
+
+
+	public function receiveMessage(): ?string
+	{
+		$response = null;
+
+		while ($chunk = fread($this->getSocketStream(), 1024)) {
+			$response .= $chunk;
+
+			if (substr($chunk, -1) === "\n") {
+				break;
+			}
+		}
+
+		return $response;
 	}
 
 
