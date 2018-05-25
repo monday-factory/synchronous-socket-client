@@ -26,7 +26,7 @@ class Connection
 
 	/**
 	 * Called after connection is established with arguments: (static, $this->socketStream)
-	 * 
+	 *
 	 * @var callable|null
 	 */
 	protected $onConnect;
@@ -97,6 +97,14 @@ class Connection
 		}
 
 		return $response;
+	}
+
+
+	public function close(): void
+	{
+		if (is_resource($this->socketStream)) {
+			fclose($this->socketStream);
+		}
 	}
 
 
