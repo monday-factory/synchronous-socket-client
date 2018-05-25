@@ -100,6 +100,12 @@ class Connection
 	}
 
 
+	public function close(): void
+	{
+		fclose($this->socketStream);
+	}
+
+
 	/**
 	 * @throws ConnectionException
 	 */

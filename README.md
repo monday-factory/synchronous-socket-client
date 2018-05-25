@@ -16,4 +16,6 @@ $connection = MondayFactory\SynchronousSocketClient\Connection::factory('tcp://m
 $response = $connection->sendMessage('{"method": "ping"}');
 
 echo $response;
+
+$connection->close();
 ```
